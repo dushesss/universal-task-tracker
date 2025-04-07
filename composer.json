@@ -1,0 +1,31 @@
+{
+    "name": "dushesss/universal-task-tracker",
+    "description": "Universal facade for multiple task trackers",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "UniversalTaskTracker\\": "src/"
+        }
+    },
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "Andrew Begeka",
+            "email": "begeka15@yandex.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "UniversalTaskTracker\\UniversalTaskTrackerServiceProvider"
+            ],
+            "aliases": {
+                "TaskTracker": "UniversalTaskTracker\\Facades\\TaskTracker"
+            }
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    }
+}
