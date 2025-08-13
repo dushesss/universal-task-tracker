@@ -37,6 +37,16 @@ class TaskTracker
         self::$manager = TrackerManager::use($driverName, $logger);
     }
 
+    /**
+     * Set a prepared manager instance.
+     *
+     * @param TrackerManager $manager
+     * @return void
+     */
+    public static function setManager(TrackerManager $manager): void
+    {
+        self::$manager = $manager;
+    }
 
     /**
      * Create a new task using the current tracker driver.

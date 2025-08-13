@@ -1,0 +1,1 @@
+{"version":1,"defects":[],"times":{"TrackerResponseTest::testSuccessResponse":0.012,"TrackerResponseTest::testErrorResponse":0.001,"Bitrix24DriverTest::testCreateTaskReturnsSuccessfulResponse":0.002,"Bitrix24DriverTest::testGetTaskReturnsMockedTask":0,"JiraDriverTest::testCreateTaskReturnsSuccessfulResponse":0.001,"JiraDriverTest::testGetTaskReturnsMockedTask":0}}

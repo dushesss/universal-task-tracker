@@ -15,15 +15,26 @@
         }
     ],
     "minimum-stability": "dev",
+    "require": {
+        "psr/log": "^1.1 || ^2.0 || ^3.0",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.0 || ^2.0",
+        "psr/http-factory": "^1.0"
+    },
     "extra": {
         "laravel": {
             "providers": [
-                "UniversalTaskTracker\\UniversalTaskTrackerServiceProvider"
+                "UniversalTaskTracker\\Bridge\\Laravel\\ServiceProvider"
             ],
             "aliases": {
                 "TaskTracker": "UniversalTaskTracker\\Facades\\TaskTracker"
             }
         }
+    },
+    "suggest": {
+        "guzzlehttp/guzzle": "^7.0 || ^8.0 as a PSR-18 client",
+        "nyholm/psr7": "^1.0 as a PSR-7 implementation",
+        "http-interop/http-factory-guzzle": "^1.2 as a PSR-17 factory"
     },
     "require-dev": {
         "phpunit/phpunit": "^9"

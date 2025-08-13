@@ -6,61 +6,151 @@ namespace UniversalTaskTracker\Drivers\Jira;
 
 use UniversalTaskTracker\Contracts\TrackerDriverInterface;
 use UniversalTaskTracker\DTO\TrackerResponse;
+use UniversalTaskTracker\Logging\DriverLogger;
+use UniversalTaskTracker\Http\Contracts\HttpClientInterface;
+use UniversalTaskTracker\Contracts\JiraConnectionInterface;
+use UniversalTaskTracker\DTO\Task;
 
 /**
- * Class JiraDriver
+ * Jira driver implementing TrackerDriverInterface.
  *
- * A Jira implementation of the TrackerDriverInterface.
- * This class provides mocked responses for basic task operations.
- * Future versions may use Jira REST API to perform real operations.
+ * Provides real REST calls when HttpClientInterface and JiraConnectionInterface are supplied,
+ * and falls back to mocked behavior otherwise.
  */
 class JiraDriver implements TrackerDriverInterface
 {
-    /**
-     * Create a new task in Jira.
-     *
-     * @param array $data Task data to be sent to Jira.
-     * @return TrackerResponse Contains success message and mock task ID.
-     */
-    public function createTask(array $data): TrackerResponse
-    {
-        return TrackerResponse::success('Task created in Jira', ['id' => 'JIRA-456']);
-    }
+	/**
+	 * Optional logger for driver actions.
+	 * @var DriverLogger|null
+	 */
+	protected $logger;
 
-    /**
-     * Update an existing task in Jira.
-     *
-     * @param string $taskId ID of the Jira task to update.
-     * @param array $data Updated data for the task.
-     * @return TrackerResponse Contains update status.
-     */
-    public function updateTask(string $taskId, array $data): TrackerResponse
-    {
-        return TrackerResponse::success("Task $taskId updated in Jira");
-    }
+	/**
+	 * Optional PSR-compatible HTTP client adapter.
+	 * @var HttpClientInterface|null
+	 */
+	protected $httpClient;
 
-    /**
-     * Delete a task in Jira.
-     *
-     * @param string $taskId ID of the Jira task to delete.
-     * @return TrackerResponse Contains deletion status.
-     */
-    public function deleteTask(string $taskId): TrackerResponse
-    {
-        return TrackerResponse::success("Task $taskId deleted from Jira");
-    }
+	/**
+	 * Optional Jira connection (base URL and headers provider).
+	 * @var JiraConnectionInterface|null
+	 */
+	protected $connection;
 
-    /**
-     * Retrieve a task from Jira.
-     *
-     * @param string $taskId ID of the Jira task to retrieve.
-     * @return TrackerResponse Contains task data or an error message.
-     */
-    public function getTask(string $taskId): TrackerResponse
-    {
-        return TrackerResponse::success("Task $taskId retrieved from Jira", [
-            'id' => $taskId,
-            'title' => 'Sample Jira task',
-        ]);
-    }
+	public function __construct(DriverLogger $logger = null, HttpClientInterface $httpClient = null, JiraConnectionInterface $connection = null)
+	{
+		$this->logger = $logger;
+		$this->httpClient = $httpClient;
+		$this->connection = $connection;
+	}
+
+	/**
+	 * Create a new Jira issue.
+	 */
+	public function createTask(array $data): TrackerResponse
+	{
+		if ($this->httpClient && $this->connection) {
+			try {
+				$headers = $this->connection->getHeaders();
+				$response = $this->httpClient->post('issue', $data, $headers);
+
+				if (!empty($response['error']) || ($response['status'] ?? 500) >= 400) {
+					return TrackerResponse::error('Failed to create task in Jira');
+				}
+
+				$body = $response['body'] ?? [];
+				$taskId = $body['key'] ?? $body['id'] ?? null;
+				return TrackerResponse::success('Task created in Jira', ['id' => (string) $taskId, 'raw' => $body]);
+			} catch (\Throwable $e) {
+				return TrackerResponse::error('Exception while creating task in Jira');
+			}
+		}
+
+		return TrackerResponse::success('Task created in Jira', ['id' => 'JIRA-456']);
+	}
+
+	/**
+	 * Update an existing Jira issue.
+	 */
+	public function updateTask(string $taskId, array $data): TrackerResponse
+	{
+		if ($this->httpClient && $this->connection) {
+			try {
+				$headers = $this->connection->getHeaders();
+				$response = $this->httpClient->put('issue/' . $taskId, $data, $headers);
+
+				if (!empty($response['error']) || ($response['status'] ?? 500) >= 400) {
+					return TrackerResponse::error('Failed to update task in Jira');
+				}
+
+				return TrackerResponse::success("Task $taskId updated in Jira");
+			} catch (\Throwable $e) {
+				return TrackerResponse::error('Exception while updating task in Jira');
+			}
+		}
+
+		return TrackerResponse::success("Task $taskId updated in Jira");
+	}
+
+	/**
+	 * Delete a Jira issue.
+	 */
+	public function deleteTask(string $taskId): TrackerResponse
+	{
+		if ($this->httpClient && $this->connection) {
+			try {
+				$headers = $this->connection->getHeaders();
+				$response = $this->httpClient->delete('issue/' . $taskId, [], $headers);
+
+				if (!empty($response['error']) || ($response['status'] ?? 500) >= 400) {
+					return TrackerResponse::error('Failed to delete task from Jira');
+				}
+
+				return TrackerResponse::success("Task $taskId deleted from Jira");
+			} catch (\Throwable $e) {
+				return TrackerResponse::error('Exception while deleting task from Jira');
+			}
+		}
+
+		return TrackerResponse::success("Task $taskId deleted from Jira");
+	}
+
+	/**
+	 * Retrieve a Jira issue by ID or key.
+	 */
+	public function getTask(string $taskId): TrackerResponse
+	{
+		if ($this->httpClient && $this->connection) {
+			try {
+				$headers = $this->connection->getHeaders();
+				$response = $this->httpClient->get('issue/' . $taskId, [], $headers);
+
+				if (!empty($response['error']) || ($response['status'] ?? 500) >= 400) {
+					return TrackerResponse::error('Failed to retrieve task from Jira');
+				}
+
+				$body = $response['body'] ?? null;
+				$task = new Task(
+					$taskId,
+					$body['fields']['summary'] ?? null,
+					$body['fields']['description'] ?? null,
+					$body['fields']['assignee']['displayName'] ?? null,
+					$body['fields']['status']['name'] ?? null,
+					$body
+				);
+				return TrackerResponse::success("Task $taskId retrieved from Jira", [
+					'id' => $task->id,
+					'title' => $task->title,
+					'raw' => $task->raw,
+				]);
+			} catch (\Throwable $e) {
+				return TrackerResponse::error('Exception while retrieving task from Jira');
+			}
+		}
+
+		return TrackerResponse::success("Task $taskId retrieved from Jira", [
+			'id' => $taskId,
+			'title' => 'Sample Jira task',
+		]);
+	}
 }

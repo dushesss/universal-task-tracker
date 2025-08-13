@@ -1,155 +1,71 @@
 
-#  Universal Task Tracker (Draft Version)
+# Universal Task Tracker
 
-> This is a **draft version** of the documentation. The package is in active development and may change significantly.
+English | [Русский](#русский)
 
-A universal PHP package to work with external task trackers like **Bitrix24** and **Jira**, using a unified API.  
-Supports multiple connection types, flexible HTTP transport (cURL or custom), and works both inside **Laravel** and standalone PHP applications.
+A framework-agnostic PHP package that provides a unified API for working with task trackers like Jira and Bitrix24.
 
----
-
-## Features
-
-- ✅ Unified driver interface: `createTask`, `updateTask`, `deleteTask`, `getTask`
-- ✅ Ready-to-use drivers: **Bitrix24**, **Jira (Cloud & Server)**
-- ✅ Works with **PHP 7.0+**
-- ✅ Optional logging to file
-- ✅ Custom HTTP transport (`HttpClientInterface`)
-- ✅ Laravel support: auto-binding, config publishing
-
----
+- Unified driver interface: createTask, updateTask, deleteTask, getTask
+- Drivers: Jira (Cloud/Server), Bitrix24
+- Pluggable HTTP client (PSR-18 adapter provided), custom or cURL
+- Optional file logging
+- Laravel bridge included (config publish, provider)
 
 ## Installation
 
 ```bash
-composer require your-vendor/universal-task-tracker
+composer require dushesss/universal-task-tracker
 ```
 
----
-
-## Quick Example (Vanilla PHP)
+## Quick Start (Plain PHP)
 
 ```php
 use UniversalTaskTracker\Facades\TaskTracker;
-use UniversalTaskTracker\Http\CurlHttpClient;
 
-// Optional: initialize HTTP client manually
-$http = new CurlHttpClient('https://your-bitrix24-url.com/', [
-    'Authorization' => 'Bearer YOUR_TOKEN',
-]);
+TaskTracker::use('bitrix');
 
-// Use tracker
-TaskTracker::use('bitrix'); // Or provide $logger and $dryRun if needed
-
-$response = TaskTracker::createTask([
-    'title' => 'My Test Task',
-]);
-
+$response = TaskTracker::createTask(['title' => 'My Task']);
 if ($response->success) {
-    echo "Task created: " . json_encode($response->data);
+    echo $response->data['id'];
 }
 ```
 
----
+For real API calls, provide a PSR-18 client and a connection object to the driver (see examples in drivers and Http/Psr18HttpClient).
 
-## Laravel Integration
+## Laravel
 
-### 1. Publish config
+- The service provider is auto-discovered: `UniversalTaskTracker\Bridge\Laravel\ServiceProvider`.
+- Publish config:
 
 ```bash
 php artisan vendor:publish --tag=task-tracker-config
 ```
 
-### 2. Update `.env`
+Set `TRACKER_DRIVER` in your `.env`.
 
-```dotenv
-TRACKER_DRIVER=jira
-
-JIRA_CONNECTION=cloud_token
-JIRA_EMAIL=your-email@example.com
-JIRA_API_TOKEN=your_api_token
-JIRA_DOMAIN=your-domain.atlassian.net
-```
-
-### 3. Use facade
-
-```php
-use UniversalTaskTracker\Facades\TaskTracker;
-
-TaskTracker::createTask([
-    'title' => 'Hello from Laravel',
-]);
-```
-
----
-
-## Configuration Options
-
-`config/trackers.php`
+## Configuration (example)
 
 ```php
 return [
-    'driver' => env('TRACKER_DRIVER', 'bitrix'),
-
-    'log_path' => env('TRACKER_LOG_PATH', storage_path('logs/task-tracker.log')),
-
-    'jira' => [
-        'connection' => env('JIRA_CONNECTION', 'cloud_token'),
-
-        'cloud_token' => [
-            'email' => env('JIRA_EMAIL'),
-            'api_token' => env('JIRA_API_TOKEN'),
-            'domain' => env('JIRA_DOMAIN'),
-        ],
-
-        'server_basic' => [
-            'username' => env('JIRA_USER'),
-            'password' => env('JIRA_PASS'),
-            'base_url' => env('JIRA_BASE_URL'),
-        ],
-    ],
+    'driver' => getenv('TRACKER_DRIVER') ?: 'bitrix',
+    'log_path' => getenv('TRACKER_LOG_PATH') ?: __DIR__ . '/../storage/logs/task-tracker.log',
 ];
 ```
 
----
+## HTTP Client
 
-##  Supported Drivers
+- Built-in: `CurlHttpClient`
+- PSR-18 adapter: `Psr18HttpClient` (use with Guzzle/Symfony HttpClient and PSR-17 factories)
 
-| Driver    | Connection Types      | Auth                   | Status     |
-|-----------|------------------------|------------------------|------------|
-| `bitrix`  | REST                   | Access token           | ✅ Ready    |
-| `jira`    | cloud_token, server_basic | Basic Auth, API token | ✅ Ready    |
-
----
-
-##  Response Structure
-
-All operations return a `TrackerResponse` object:
+## Response
 
 ```php
 class TrackerResponse {
     public bool $success;
     public string $message;
-    public array|null $data;
+    public ?array $data;
 }
 ```
-
----
-
-##  Custom HTTP Clients
-
-The package uses `HttpClientInterface`. You can implement your own (e.g., with Guzzle):
-
-```php
-interface HttpClientInterface {
-    public function get(string $url, array $query = [], array $headers = []);
-    public function post(string $url, array $data = [], array $headers = []);
-    public function put(string $url, array $data = [], array $headers = []);
-    public function delete(string $url, array $data = [], array $headers = []);
-}
-```
-
----
 
 ## Testing
 
@@ -159,14 +75,74 @@ vendor/bin/phpunit
 
 ---
 
-## Roadmap
+## Русский
 
-- [x] Bitrix24 driver
-- [x] Jira driver (Cloud / Server)
-- [x] Logging support
-- [ ] Async queue jobs
-- [ ] Webhook support
-- [ ] Optional Guzzle adapter
-- [ ] Driver auto-discovery
+Фреймворк-агностичный PHP-пакет с унифицированным API для работы с трекерами задач (Jira, Bitrix24).
 
----
+- Унифицированный интерфейс драйверов: createTask, updateTask, deleteTask, getTask
+- Драйверы: Jira (Cloud/Server), Bitrix24
+- Подключаемый HTTP-клиент (есть адаптер PSR-18), или cURL
+- Необязательное логирование в файл
+- Мост для Laravel (провайдер, публикация конфига)
+
+## Установка
+
+```bash
+composer require dushesss/universal-task-tracker
+```
+
+## Быстрый старт (Plain PHP)
+
+```php
+use UniversalTaskTracker\Facades\TaskTracker;
+
+TaskTracker::use('bitrix');
+
+$response = TaskTracker::createTask(['title' => 'Моя задача']);
+if ($response->success) {
+    echo $response->data['id'];
+}
+```
+
+Для реальных вызовов передайте PSR-18 клиент и объект соединения в драйвер (см. примеры в драйверах и Http/Psr18HttpClient).
+
+## Laravel
+
+- Провайдер обнаруживается автоматически: `UniversalTaskTracker\Bridge\Laravel\ServiceProvider`.
+- Публикация конфига:
+
+```bash
+php artisan vendor:publish --tag=task-tracker-config
+```
+
+Установите `TRACKER_DRIVER` в `.env`.
+
+## Конфигурация (пример)
+
+```php
+return [
+    'driver' => getenv('TRACKER_DRIVER') ?: 'bitrix',
+    'log_path' => getenv('TRACKER_LOG_PATH') ?: __DIR__ . '/../storage/logs/task-tracker.log',
+];
+```
+
+## HTTP-клиент
+
+- Встроенный: `CurlHttpClient`
+- Адаптер PSR-18: `Psr18HttpClient` (совместим с Guzzle/Symfony HttpClient и PSR-17 фабриками)
+
+## Ответ
+
+```php
+class TrackerResponse {
+    public bool $success;
+    public string $message;
+    public ?array $data;
+}
+```
+
+## Тесты
+
+```bash
+vendor/bin/phpunit
+```

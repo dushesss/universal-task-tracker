@@ -13,7 +13,10 @@ return [
     |
     */
 
-    'driver' => env('TRACKER_DRIVER', 'bitrix'),
+    'driver' => (function () {
+        $value = getenv('TRACKER_DRIVER');
+        return $value !== false ? $value : 'bitrix';
+    })(),
 
     /*
     |--------------------------------------------------------------------------
@@ -25,5 +28,8 @@ return [
     |
     */
 
-    'log_path' => env('TRACKER_LOG_PATH', __DIR__ . '/../storage/logs/task-tracker.log'),
+    'log_path' => (function () {
+        $value = getenv('TRACKER_LOG_PATH');
+        return $value !== false ? $value : (__DIR__ . '/../storage/logs/task-tracker.log');
+    })(),
 ];
