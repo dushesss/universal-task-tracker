@@ -4,18 +4,29 @@ declare(strict_types=1);
 
 namespace UniversalTaskTracker\Core\Config;
 
+/**
+ * ArrayConfig
+ *
+ * Simple array-based config storage with dot access.
+ */
 class ArrayConfig implements ConfigInterface
 {
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     private $values;
 
+    /**
+     * @param array<string,mixed> $values Initial config values
+     */
     public function __construct(array $values)
     {
         $this->values = $values;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function get(string $key, $default = null)
     {
         $segments = explode('.', $key);
@@ -31,6 +42,9 @@ class ArrayConfig implements ConfigInterface
         return $value;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function all(): array
     {
         return $this->values;

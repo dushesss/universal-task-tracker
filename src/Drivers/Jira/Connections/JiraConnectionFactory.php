@@ -7,13 +7,17 @@ namespace UniversalTaskTracker\Drivers\Jira\Connections;
 use UniversalTaskTracker\Contracts\JiraConnectionInterface;
 use InvalidArgumentException;
 
+/**
+ * Factory for creating Jira connection instances from array config.
+ */
 class JiraConnectionFactory
 {
     /**
      * Create a Jira connection instance based on configuration.
      *
-     * @param array $config
-     * @return JiraConnectionInterface
+     * @param array $config Config with 'connection' key and nested settings
+     * @return JiraConnectionInterface Concrete connection
+     * @throws InvalidArgumentException When type is missing or unsupported
      */
     public static function make(array $config): JiraConnectionInterface
     {

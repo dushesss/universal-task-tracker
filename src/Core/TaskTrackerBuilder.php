@@ -9,33 +9,33 @@ use UniversalTaskTracker\Core\Registry\DriverRegistry;
 use UniversalTaskTracker\Logging\DriverLogger;
 use UniversalTaskTracker\TrackerManager;
 
+/**
+ * TaskTrackerBuilder
+ *
+ * Small helper that builds TrackerManager from config and registry.
+ */
 class TaskTrackerBuilder
 {
-    /**
-     * @var ConfigInterface
-     */
-    private $config;
+	/** @var ConfigInterface */
+	private $config;
 
-    /**
-     * @var DriverRegistry
-     */
-    private $registry;
+	/** @var DriverRegistry */
+	private $registry;
 
-    /**
-     * @var DriverLogger|null
-     */
-    private $logger;
+	/** @var DriverLogger|null */
+	private $logger;
 
-    public function __construct(ConfigInterface $config, DriverRegistry $registry, DriverLogger $logger = null)
-    {
-        $this->config = $config;
-        $this->registry = $registry;
-        $this->logger = $logger;
-    }
+	public function __construct(ConfigInterface $config, DriverRegistry $registry, DriverLogger $logger = null)
+	{
+		$this->config = $config;
+		$this->registry = $registry;
+		$this->logger = $logger;
+	}
 
-    public function build(): TrackerManager
-    {
-        $driverName = (string) $this->config->get('trackers.driver', 'bitrix');
-        return TrackerManager::create($driverName, $this->logger, $this->registry);
-    }
+	/** Build a new TrackerManager instance. */
+	public function build(): TrackerManager
+	{
+		$driverName = (string) $this->config->get('trackers.driver', 'bitrix');
+		return TrackerManager::create($driverName, $this->logger, $this->registry);
+	}
 } 

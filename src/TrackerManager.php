@@ -12,6 +12,8 @@ use InvalidArgumentException;
 use RuntimeException;
 use UniversalTaskTracker\Core\Registry\DriverRegistry;
 use UniversalTaskTracker\DTO\TrackerResponse;
+use UniversalTaskTracker\Drivers\Asana\AsanaDriver;
+use UniversalTaskTracker\Drivers\ClickUp\ClickUpDriver;
 
 /**
  * TrackerManager is a thin wrapper around a concrete TrackerDriverInterface.
@@ -23,7 +25,7 @@ use UniversalTaskTracker\DTO\TrackerResponse;
 class TrackerManager
 {
 	/**
-	 * @var TrackerDriverInterface
+	 * @var TrackerDriverInterface Underlying driver instance
 	 */
 	protected $driver;
 
@@ -38,7 +40,9 @@ class TrackerManager
 	protected $registry;
 
 	/**
-	 * @param string $driverName Name of the driver (e.g., bitrix, jira)
+	 * Construct manager for provided driver name.
+	 *
+	 * @param string $driverName Name of the driver (e.g., bitrix, jira, asana, clickup)
 	 * @param DriverLogger|null $logger Optional logger passed to the driver
 	 * @param DriverRegistry|null $registry Optional registry to resolve the driver
 	 */
@@ -50,6 +54,11 @@ class TrackerManager
 
 	/**
 	 * Factory method to create a new manager instance without touching the singleton.
+	 *
+	 * @param string $driverName Driver name
+	 * @param DriverLogger|null $logger Logger
+	 * @param DriverRegistry|null $registry Driver registry
+	 * @return TrackerManager New manager instance
 	 */
 	public static function create(string $driverName, DriverLogger $logger = null, DriverRegistry $registry = null): TrackerManager
 	{
@@ -59,6 +68,11 @@ class TrackerManager
 	/**
 	 * Initialize a global singleton manager instance.
 	 * Throws if called more than once.
+	 *
+	 * @param string $driverName Driver name
+	 * @param DriverLogger|null $logger Logger
+	 * @param DriverRegistry|null $registry Registry
+	 * @return TrackerManager The singleton instance
 	 */
 	public static function use(string $driverName, DriverLogger $logger = null, DriverRegistry $registry = null)
 	{
@@ -73,6 +87,9 @@ class TrackerManager
 
 	/**
 	 * Get the global singleton instance.
+	 *
+	 * @return TrackerManager The singleton instance
+	 * @throws RuntimeException If not initialized
 	 */
 	public static function getInstance()
 	{
@@ -85,6 +102,8 @@ class TrackerManager
 
 	/**
 	 * Get the underlying driver.
+	 *
+	 * @return TrackerDriverInterface Active driver instance
 	 */
 	public function driver()
 	{
@@ -117,6 +136,10 @@ class TrackerManager
 
 	/**
 	 * Resolve a driver by name either through the registry or default mapping.
+	 *
+	 * @param string $driverName Name
+	 * @param DriverLogger|null $logger Logger
+	 * @return TrackerDriverInterface Driver instance
 	 */
 	protected function resolveDriver(string $driverName, DriverLogger $logger = null)
 	{
@@ -131,6 +154,12 @@ class TrackerManager
 
 			case 'jira':
 				return new JiraDriver($logger);
+
+			case 'asana':
+				return new AsanaDriver($logger);
+
+			case 'clickup':
+				return new ClickUpDriver($logger);
 
 			default:
 				throw new InvalidArgumentException("Unknown driver: {$driverName}");

@@ -11,100 +11,100 @@ use UniversalTaskTracker\TrackerManager;
 use RuntimeException;
 
 /**
- * Class TaskTracker
+ * TaskTracker
  *
- * Universal static interface for interacting with a selected task tracker driver.
- * This is a standalone facade and does not require Laravel.
+ * Static facade for working with the current driver.
+ * It can be used without Laravel.
  */
 class TaskTracker
 {
-    /**
-     * @var TrackerManager|null
-     */
-    protected static $manager = null;
+	/** @var TrackerManager|null */
+	protected static $manager = null;
 
-    /**
-     * @param string $driverName
-     * @param DriverLogger|null $logger
-     * @return void
-     */
-    public static function use(string $driverName, DriverLogger $logger = null)
-    {
-        if (self::$manager !== null) {
-            throw new \RuntimeException("Driver has already been initialized.");
-        }
+	/**
+	 * Initialize the manager using a driver name.
+	 *
+	 * @param string $driverName Driver name like jira, bitrix, asana, clickup
+	 * @param DriverLogger|null $logger Optional logger instance
+	 * @return void
+	 */
+	public static function use(string $driverName, DriverLogger $logger = null)
+	{
+		if (self::$manager !== null) {
+			throw new \RuntimeException("Driver has already been initialized.");
+		}
 
-        self::$manager = TrackerManager::use($driverName, $logger);
-    }
+		self::$manager = TrackerManager::use($driverName, $logger);
+	}
 
-    /**
-     * Set a prepared manager instance.
-     *
-     * @param TrackerManager $manager
-     * @return void
-     */
-    public static function setManager(TrackerManager $manager): void
-    {
-        self::$manager = $manager;
-    }
+	/**
+	 * Set a prepared manager instance.
+	 *
+	 * @param TrackerManager $manager Instance prepared outside
+	 * @return void
+	 */
+	public static function setManager(TrackerManager $manager): void
+	{
+		self::$manager = $manager;
+	}
 
-    /**
-     * Create a new task using the current tracker driver.
-     *
-     * @param array $data
-     * @return TrackerResponse
-     */
-    public static function createTask(array $data): TrackerResponse
-    {
-        return self::driver()->createTask($data);
-    }
+	/**
+	 * Create a task via current driver.
+	 *
+	 * @param array $data Task data (title, description, assignee, etc.)
+	 * @return TrackerResponse Result with new id and other info
+	 */
+	public static function createTask(array $data): TrackerResponse
+	{
+		return self::driver()->createTask($data);
+	}
 
-    /**
-     * Update a task using the current tracker driver.
-     *
-     * @param string $taskId
-     * @param array $data
-     * @return TrackerResponse
-     */
-    public static function updateTask(string $taskId, array $data): TrackerResponse
-    {
-        return self::driver()->updateTask($taskId, $data);
-    }
+	/**
+	 * Update a task via current driver.
+	 *
+	 * @param string $taskId ID of the task to update
+	 * @param array $data Fields to update
+	 * @return TrackerResponse Result of update
+	 */
+	public static function updateTask(string $taskId, array $data): TrackerResponse
+	{
+		return self::driver()->updateTask($taskId, $data);
+	}
 
-    /**
-     * Delete a task using the current tracker driver.
-     *
-     * @param string $taskId
-     * @return TrackerResponse
-     */
-    public static function deleteTask(string $taskId): TrackerResponse
-    {
-        return self::driver()->deleteTask($taskId);
-    }
+	/**
+	 * Delete a task via current driver.
+	 *
+	 * @param string $taskId ID of the task to delete
+	 * @return TrackerResponse Result of delete
+	 */
+	public static function deleteTask(string $taskId): TrackerResponse
+	{
+		return self::driver()->deleteTask($taskId);
+	}
 
-    /**
-     * Retrieve a task using the current tracker driver.
-     *
-     * @param string $taskId
-     * @return TrackerResponse
-     */
-    public static function getTask(string $taskId): TrackerResponse
-    {
-        return self::driver()->getTask($taskId);
-    }
+	/**
+	 * Get a task via current driver.
+	 *
+	 * @param string $taskId ID of the task to fetch
+	 * @return TrackerResponse Result with task data
+	 */
+	public static function getTask(string $taskId): TrackerResponse
+	{
+		return self::driver()->getTask($taskId);
+	}
 
-    /**
-     * Get the underlying driver from the manager.
-     *
-     * @return TrackerDriverInterface
-     * @throws RuntimeException If the driver was not initialized.
-     */
-    protected static function driver(): TrackerDriverInterface
-    {
-        if (!self::$manager) {
-            throw new RuntimeException("Driver not initialized. Call TaskTracker::use() first.");
-        }
+	/**
+	 * Get the underlying driver from the manager.
+	 *
+	 * @return TrackerDriverInterface Active driver instance
+	 * @throws RuntimeException If the driver was not initialized.
+	 */
+	protected static function driver(): TrackerDriverInterface
+	{
+		if (!self::$manager) {
+			throw new RuntimeException("Driver not initialized. Call TaskTracker::use() first.");
+		}
 
-        return self::$manager->driver();
-    }
+		return self::$manager->driver();
+	}
 }

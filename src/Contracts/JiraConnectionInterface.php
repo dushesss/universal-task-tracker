@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace UniversalTaskTracker\Contracts;
 
 /**
- * Interface JiraConnectionInterface
+ * JiraConnectionInterface
  *
- * Describes how a Jira connection must provide base URL and headers.
+ * Provides base URL and headers for Jira API requests.
  */
 interface JiraConnectionInterface
 {
     /**
      * Returns the base URL for Jira API requests.
      *
-     * @return string
+     * @return string Base URL ending with /rest/api/{version}/
      */
     public function getBaseUrl(): string;
 
     /**
-     * Returns the headers required for authenticated requests.
+     * Returns headers required for authenticated requests.
      *
-     * @return array
+     * @return array<string,string> Headers map
      */
     public function getHeaders(): array;
 }

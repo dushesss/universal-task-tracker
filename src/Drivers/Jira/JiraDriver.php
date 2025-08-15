@@ -37,6 +37,13 @@ class JiraDriver implements TrackerDriverInterface
 	 */
 	protected $connection;
 
+	/**
+	 * Create Jira driver instance.
+	 *
+	 * @param DriverLogger|null $logger Optional logger
+	 * @param HttpClientInterface|null $httpClient PSR-based HTTP client
+	 * @param JiraConnectionInterface|null $connection Connection that provides base URL and headers
+	 */
 	public function __construct(DriverLogger $logger = null, HttpClientInterface $httpClient = null, JiraConnectionInterface $connection = null)
 	{
 		$this->logger = $logger;
@@ -46,6 +53,9 @@ class JiraDriver implements TrackerDriverInterface
 
 	/**
 	 * Create a new Jira issue.
+	 *
+	 * @param array $data Jira fields payload for POST /issue
+	 * @return TrackerResponse Result with new issue id/key
 	 */
 	public function createTask(array $data): TrackerResponse
 	{
@@ -71,6 +81,10 @@ class JiraDriver implements TrackerDriverInterface
 
 	/**
 	 * Update an existing Jira issue.
+	 *
+	 * @param string $taskId Jira issue id or key
+	 * @param array $data Jira fields payload for PUT /issue/{id}
+	 * @return TrackerResponse Result of update
 	 */
 	public function updateTask(string $taskId, array $data): TrackerResponse
 	{
@@ -94,6 +108,9 @@ class JiraDriver implements TrackerDriverInterface
 
 	/**
 	 * Delete a Jira issue.
+	 *
+	 * @param string $taskId Jira issue id or key
+	 * @return TrackerResponse Result of delete
 	 */
 	public function deleteTask(string $taskId): TrackerResponse
 	{
@@ -117,6 +134,9 @@ class JiraDriver implements TrackerDriverInterface
 
 	/**
 	 * Retrieve a Jira issue by ID or key.
+	 *
+	 * @param string $taskId Jira issue id or key
+	 * @return TrackerResponse Result with normalized data and raw body
 	 */
 	public function getTask(string $taskId): TrackerResponse
 	{

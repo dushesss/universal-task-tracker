@@ -28,6 +28,15 @@ class Psr18HttpClient implements HttpClientInterface
 	/** @var array */
 	private $defaultHeaders;
 
+	/**
+	 * Create adapter instance.
+	 *
+	 * @param Psr18Client $client PSR-18 client
+	 * @param RequestFactoryInterface $requestFactory PSR-17 request factory
+	 * @param StreamFactoryInterface $streamFactory PSR-17 stream factory
+	 * @param string $baseUrl Optional base URL, like https://api.example.com/
+	 * @param array $defaultHeaders Default headers applied to each request
+	 */
 	public function __construct(Psr18Client $client, RequestFactoryInterface $requestFactory, StreamFactoryInterface $streamFactory, string $baseUrl = '', array $defaultHeaders = [])
 	{
 		$this->client = $client;
@@ -37,29 +46,68 @@ class Psr18HttpClient implements HttpClientInterface
 		$this->defaultHeaders = $defaultHeaders;
 	}
 
+	/**
+	 * Send a GET request.
+	 *
+	 * @param string $endpoint Relative path
+	 * @param array $query Query params
+	 * @param array $headers Extra headers
+	 * @return array{status:int,body:mixed,headers:array,error:?string}
+	 */
 	public function get(string $endpoint, array $query = [], array $headers = []): array
 	{
 		return $this->send('GET', $endpoint, $query, null, $headers);
 	}
 
+	/**
+	 * Send a POST request.
+	 *
+	 * @param string $endpoint Relative path
+	 * @param array $data JSON payload
+	 * @param array $headers Extra headers
+	 * @return array{status:int,body:mixed,headers:array,error:?string}
+	 */
 	public function post(string $endpoint, array $data = [], array $headers = []): array
 	{
 		return $this->send('POST', $endpoint, [], $data, $headers);
 	}
 
+	/**
+	 * Send a PUT request.
+	 *
+	 * @param string $endpoint Relative path
+	 * @param array $data JSON payload
+	 * @param array $headers Extra headers
+	 * @return array{status:int,body:mixed,headers:array,error:?string}
+	 */
 	public function put(string $endpoint, array $data = [], array $headers = []): array
 	{
 		return $this->send('PUT', $endpoint, [], $data, $headers);
 	}
 
+	/**
+	 * Send a DELETE request.
+	 *
+	 * @param string $endpoint Relative path
+	 * @param array $data Optional JSON payload
+	 * @param array $headers Extra headers
+	 * @return array{status:int,body:mixed,headers:array,error:?string}
+	 */
 	public function delete(string $endpoint, array $data = [], array $headers = []): array
 	{
 		return $this->send('DELETE', $endpoint, [], $data, $headers);
 	}
 
 	/**
-	 * Send a request using the underlying PSR-18 client and return a normalized array
-	 * similar to CurlHttpClient: [status, body, headers, error].
+	 * Send a request using PSR-18 client.
+	 * Returns normalized array similar to CurlHttpClient.
+	 *
+	 * @param string $method HTTP method (GET/POST/PUT/DELETE)
+	 * @param string $endpoint Relative path
+	 * @param array $query Query params
+	 * @param array|null $body JSON body or null
+	 * @param array $headers Extra headers
+	 * @return array{status:int,body:mixed,headers:array,error:?string}
 	 */
 	private function send(string $method, string $endpoint, array $query = [], array $body = null, array $headers = []): array
 	{

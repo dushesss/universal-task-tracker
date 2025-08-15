@@ -38,7 +38,7 @@ class Bitrix24Driver implements TrackerDriverInterface
     protected $connection;
 
     /**
-     * Bitrix24Driver constructor.
+     * Create Bitrix24 driver instance.
      *
      * @param DriverLogger|null $logger Optional logger for tracking driver actions.
      * @param HttpClientInterface|null $httpClient HTTP client for real API calls.
@@ -54,6 +54,9 @@ class Bitrix24Driver implements TrackerDriverInterface
 
     /**
      * Create a new task in Bitrix24.
+     *
+     * @param array $data Task data to be sent to Bitrix24.
+     * @return TrackerResponse Result with new id and raw body if available
      */
     public function createTask(array $data): TrackerResponse
     {
@@ -77,6 +80,10 @@ class Bitrix24Driver implements TrackerDriverInterface
 
     /**
      * Update an existing task in Bitrix24.
+     *
+     * @param string $taskId ID of the Bitrix24 task to update.
+     * @param array $data Updated data for the task.
+     * @return TrackerResponse Result of update
      */
     public function updateTask(string $taskId, array $data): TrackerResponse
     {
@@ -98,6 +105,9 @@ class Bitrix24Driver implements TrackerDriverInterface
 
     /**
      * Delete a task in Bitrix24.
+     *
+     * @param string $taskId ID of the Bitrix24 task to delete.
+     * @return TrackerResponse Result of delete
      */
     public function deleteTask(string $taskId): TrackerResponse
     {
@@ -118,6 +128,9 @@ class Bitrix24Driver implements TrackerDriverInterface
 
     /**
      * Retrieve a task from Bitrix24 by ID.
+     *
+     * @param string $taskId ID of the Bitrix24 task to retrieve.
+     * @return TrackerResponse Result with normalized data and raw body
      */
     public function getTask(string $taskId): TrackerResponse
     {

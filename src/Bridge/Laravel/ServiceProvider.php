@@ -11,13 +11,28 @@ use UniversalTaskTracker\Core\Config\ArrayConfig;
 use UniversalTaskTracker\Core\Registry\DriverRegistry;
 use UniversalTaskTracker\Facades\TaskTracker as StaticTaskTracker;
 
+/**
+ * Laravel service provider for Universal Task Tracker bridge.
+ *
+ * It merges/publishes config and builds manager instance for facade usage.
+ */
 class ServiceProvider extends BaseServiceProvider
 {
+    /**
+     * Register bindings and merge config into application config repository.
+     *
+     * @return void
+     */
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../../config/trackers.php', 'trackers');
     }
 
+    /**
+     * Bootstrap provider: publish config and setup TaskTracker facade manager.
+     *
+     * @return void
+     */
     public function boot()
     {
         $this->publishes([
